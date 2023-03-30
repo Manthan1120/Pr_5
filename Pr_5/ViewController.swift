@@ -7,15 +7,17 @@
 
 import UIKit
 
-class ViewController: UIViewController,UITableViewDelegate,UITableViewDataSource {
+class ViewController: UIViewController,UITableViewDelegate,UITableViewDataSource,UISearchBarDelegate {
     
     var arr : [WelcomeElement] = []
-    
+    var searchArr : [WelcomeElement] = []
+    @IBOutlet weak var searchBar: UISearchBar!
     @IBOutlet weak var Tableview: UITableView!
     override func viewDidLoad() {
         super.viewDidLoad()
       countryApi()
     }
+  
 
     func countryApi() {
         
@@ -26,7 +28,7 @@ class ViewController: UIViewController,UITableViewDelegate,UITableViewDataSource
         URLSession.shared.dataTask(with: ur) { data, response, error in
             do {
                 self.arr = try JSONDecoder().decode([WelcomeElement].self, from: data!)
-
+                self.searchArr = self.arr
                 DispatchQueue.main.async {
                     self.Tableview.reloadData()
                 }
@@ -52,6 +54,15 @@ class ViewController: UIViewController,UITableViewDelegate,UITableViewDataSource
         
         return cell
     }
+    func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
+        let navigation = storyboard?.instantiateViewController(withIdentifier: "ViewController2") as! ViewController2
+        navigationController?.pushViewController(navigation, animated: true)
+        navigation.populaiton = arr[indexPath.row].population.description
+        navigation.name = arr[indexPath.row].name.common
+        navigation.imageForflag = stringToImage(link: arr[indexPath.row].flags.png)!
+        navigation.imageforMudra = stringToImage(link: arr[indexPath.row].coatOfArms.png!)!
+        
+    }
     
     func stringToImage(link:String) -> UIImage? {
         let url1 = URL(string:link)
@@ -61,5 +72,13 @@ class ViewController: UIViewController,UITableViewDelegate,UITableViewDataSource
     func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
         return 200
     }
+    func searchBar(_ searchBar: UISearchBar, textDidChange searchText: String) {
+        
+            arr = searchArr.filter({ i in
+                return i.name.common.contains(searchBar.text!)
+            })
+                Tableview.reloadData()
+    }
+    
 }
 
